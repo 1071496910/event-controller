@@ -48,10 +48,10 @@ func (c *Controller) Run() error {
 	var wg sync.WaitGroup
 	wg.Add(4)
 
+	eventChan, cancel, err := c.sucker.GetSucker()
 	go func() {
 		defer wg.Done()
-		eventChan := c.sucker.GetSucker()
-		if eventChan == nil {
+		if err != nil {
 			panic(fmt.Errorf("get sucker error"))
 		}
 	SuckLoop:
@@ -112,6 +112,7 @@ func (c *Controller) Run() error {
 		}
 	}()
 	wg.Wait()
+	cancel()
 	return nil
 }
 

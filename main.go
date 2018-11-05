@@ -2,44 +2,32 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/1071496910/event-controller/controller"
 )
 
-type FakeSucker struct{}
-
-func (fs *FakeSucker) GetSucker() chan *controller.Event {
-	ch := make(chan *controller.Event, 1024)
-	go func() {
-		for i := 0; ; i++ {
-			ch <- &controller.Event{
-				OPType: i % 3,
-				Obj:    i,
-			}
-			time.Sleep(1 * time.Second)
-		}
-	}()
-	return ch
-}
-
 func main() {
 	// func NewController(sucker controller.EventSucker, addFunc controller.EventDealFunc, updateFunc controller.EventDealFunc, delFunc controller.EventDealFunc, eventQueueLen
-	ctl := controller.NewController(&FakeSucker{},
+	// func NewEtcdSucker(etcdEndpoints string, prefix string, opts ...controller.EtcdSuckerOption) (*controller.EtcdSucker, error)
+	sucker, err := controller.NewEtcdSucker("127.0.0.1:2379", "/", controller.EtcdSuckerWithRecursive())
+	if err != nil {
+		panic(err)
+	}
+	ctl := controller.NewController(
+		sucker,
 		func(i interface{}) {
-			fmt.Println("In add func", i)
+			kv := i.(*controller.EtcdSuckerEventObj)
+			fmt.Printf("In add func[key: %v, val: %v]\n", string(kv.Key), string(kv.Val))
 		},
 		func(i interface{}) {
-			fmt.Println("In update func", i)
+			kv := i.(*controller.EtcdSuckerEventObj)
+			fmt.Printf("In update func[key: %v, val: %v]\n", string(kv.Key), string(kv.Val))
 		},
 		func(i interface{}) {
-			fmt.Println("In del func", i)
+			kv := i.(*controller.EtcdSuckerEventObj)
+			fmt.Printf("In del func[key: %v, val: %v]\n", string(kv.Key), string(kv.Val))
 		},
 		1024)
-	go func() {
-		time.Sleep(10 * time.Second)
-		ctl.Stop()
-	}()
 	ctl.Run()
 
 }
