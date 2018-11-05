@@ -26,15 +26,14 @@ func (fs *FakeSucker) GetSucker() chan *controller.Event {
 func main() {
 	// func NewController(sucker controller.EventSucker, addFunc controller.EventDealFunc, updateFunc controller.EventDealFunc, delFunc controller.EventDealFunc, eventQueueLen
 	ctl := controller.NewController(&FakeSucker{},
-		func(e *controller.Event) {
-
-			fmt.Println("In add func", e)
+		func(i interface{}) {
+			fmt.Println("In add func", i)
 		},
-		func(e *controller.Event) {
-			fmt.Println("In update func", e)
+		func(i interface{}) {
+			fmt.Println("In update func", i)
 		},
-		func(e *controller.Event) {
-			fmt.Println("In del func", e)
+		func(i interface{}) {
+			fmt.Println("In del func", i)
 		},
 		1024)
 	go func() {

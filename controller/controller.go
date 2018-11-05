@@ -16,7 +16,7 @@ type Event struct {
 	Obj    interface{}
 }
 
-type EventDealFunc func(e *Event)
+type EventDealFunc func(i interface{})
 
 type Controller struct {
 	sucker EventSucker
@@ -79,7 +79,7 @@ func (c *Controller) Run() error {
 		for {
 			select {
 			case e := <-c.addChan:
-				c.addFunc(e)
+				c.addFunc(e.Obj)
 			case _ = <-c.stopChan:
 				break AddLoop
 			}
@@ -92,7 +92,7 @@ func (c *Controller) Run() error {
 		for {
 			select {
 			case e := <-c.updateChan:
-				c.updateFunc(e)
+				c.updateFunc(e.Obj)
 			case _ = <-c.stopChan:
 				break UpdateLoop
 			}
@@ -104,7 +104,7 @@ func (c *Controller) Run() error {
 		for {
 			select {
 			case e := <-c.delChan:
-				c.delFunc(e)
+				c.delFunc(e.Obj)
 			case _ = <-c.stopChan:
 				break DelLoop
 			}
